@@ -1,0 +1,148 @@
+{%extends 'main/base.html'%}
+<!--[if IE 8]>This is Home<![endif]-->
+{% block title %}MY-APP{% endblock %}
+<!--[if IE 8]>This is Home<![endif]-->
+{%block content%} {% load static %}
+<!-- Card Upload -->
+<center>
+    {% for message in messages %}
+    <div class="alert alert-{{message.tags}} alert-dismissible fade show" id="msg{{message.tags}}" role="alert">
+        <strong>{{message}}</strong>
+        <button type="button" class="close" id="close{{message.tags}}" data-dismiss="alert" style="outline: none;" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <script>
+        document.getElementById('close{{message.tags}}').addEventListener('click', () => {
+            document.getElementById('msg{{message.tags}}').style.display = 'none';
+        });
+    </script>
+    {% endfor %}
+</center>
+<div class="col-sm-12 bg-gray-200 my-6 rounded-3 p-lg-5 flex justify-content-center align-content-center flex-wrap" id="imgContainer">
+    <div class="col-sm-12 flex justify-content-center align-content-center flex-wrap">
+        <a class="btn btn-primary mx-3" href='{{src}}' download>Download image</a>
+        <a class="btn btn-outline-danger mx-3" onClick="self.location.replace(location['href'])">Refresh</a>
+    </div>
+    <div class="col-sm-12 flex justify-content-center align-content-center flex-wrap">
+        <img src="{{src}}" class="my-6 rounded-3" id="img1" class="w-100">
+    </div>
+    <script>
+        async function downloadImage(imageSrc) {
+            const image = await fetch(imageSrc)
+            const imageBlog = await image.blob()
+            const imageURL = URL.createObjectURL(imageBlog)
+            const link = document.createElement('a')
+            link.href = imageURL
+            link.download = '{{filename}}'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        }
+    </script>
+</div>
+<script>
+    setInterval(() => {
+        const Src = "{{src}}";
+        if (Src == "") {
+            document.getElementById('imgContainer').style.display = 'none';
+        } else {
+            document.getElementById('imgContainer').style.display = 'flex';
+        }
+    }, 100);
+</script>
+<div class="p-6 col-sm-12 flex align-items-center justify-content-center bg-blue-100 overflow-auto flex-wrap rounded-3">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="flex justify-content-center align-content-center flex-wrap">
+            <div class="bg-blue-200 rounded-3 p-0 mx-3">
+                <div class="py-3 px-3 m-0 bg-blue-900 flex align-items-center justify-content-center flex-wrap">
+                    <h1 class="h3 m-0 font-weight-bold text-light"><i class="fas fa-fw fa-arrow-circle-up"></i> Upload Images
+                    </h1>
+                </div>
+                <div class="alert alert-warning">
+                    <p><b>Note: </b>
+                        <ul>
+                            <li>1. Upload only in *.jpeg or *.jpg format.
+                            </li>
+                            <li>2. Do not upload Gray Scale Image.</li>
+                        </ul>
+                    </p>
+                </div>
+                <figure class="image-container flex align-items-center justify-content-center flex-wrap">
+                    <div class="col-sm-12 p-6">
+                        <label class="btn btn-primary px-3 col-sm-12 py-10" for="upload-button">
+                            <i class=" fas fa-upload "></i>&nbsp;
+                            {% csrf_token %}
+                            <input type="file" name="image" accept="image/jpg , image/jpeg" required>
+                        </label>
+                    </div>
+                </figure>
+            </div>
+            <div class="bg-blue-200 rounded-3 p-0">
+                <div class="py-3 px-3 m-0 bg-blue-900 flex align-items-center justify-content-center">
+                    <h1 class="h3 m-0 font-weight-bold text-light"><i class="fas fa-fw fa-arrow-circle-up"></i> Upload Watermark
+                    </h1>
+                </div>
+                <div class="alert alert-warning">
+                    <p><b>Note: </b>
+                        <ul>
+                            <li>1. Watermark should be clear and readable.
+                            </li>
+                            <li>2. Upload only in *.png or *.webp format.
+                            </li>
+                        </ul>
+                    </p>
+                </div>
+                <figure class="image-container flex align-items-center justify-content-center flex-wrap">
+                    <div class="col-sm-12 p-6">
+                        <label class="btn btn-primary px-3 col-sm-12 py-10" for="upload-button">
+                            <i class=" fas fa-upload "></i>&nbsp;
+                            {% csrf_token %}
+                            <input type="file" name="watermark" accept="image/webp, image/png" required>
+                        </label>
+                    </div>
+                </figure>
+            </div>
+        </div>
+        <div class="m-3 w-100 bg-blue-200 rounded-3 p-0">
+            <div class="p-6 my-6">
+                <label for="floatingSelectGrid" class="font-bold">Select Shape of watermark</label>
+                <div class="form-floating">
+                    <select class="form-select" id="floatingSelectGrid" name="flag" aria-label="Floating label select example">
+                        <option selected>Select...</option>
+                        <option value="1">Square</option>
+                        <option value="0">Rectangular</option>
+                    </select>
+                    <label for="floatingSelectGrid">Select Shape of watermark</label>
+                </div>
+                <label for="customRange1" class="form-label flex my-3 font-bold">
+                    Select Opacity Value(Opacity : <div id="data" class="text-red-600">
+                    </div>)
+                </label>
+                <div class="form-control">
+                    {% csrf_token %}
+                    <input type="range" class="form-range " name="alpha" value="0.5" min="0" max="1" step="0.1" id="customRange3">
+                </div>
+            </div>
+        </div>
+        <center>
+            <button type="submit" class="bg-blue-700 btn btn-primary p-3 m-3 w-100" for="upload-button">
+                <i class=" fas fa-upload "></i>&nbsp;
+                Process Images
+            </button>
+            <button type="reset" id="reset" class="btn btn-outline-danger p-3 m-3 w-100" for="upload-button">
+                <i class=" fas fa-trash "></i>&nbsp;
+                Reset
+            </button>
+        </center>
+
+    </form>
+</div>
+<script>
+    setInterval(() => {
+        const Value = document.getElementById('customRange3').value;
+        document.getElementById('data').innerHTML = Value;
+    }, 100);
+</script>
+{%endblock%}
